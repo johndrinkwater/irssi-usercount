@@ -1,8 +1,8 @@
 use Irssi 20020101.0250 ();
 $VERSION = "1.16";
 %IRSSI = (
-    authors     => 'David Leadbeater, Timo Sirainen, Georg Lukas',
-    contact     => 'dgl@dgl.cx, tss@iki.fi, georg@boerde.de',
+    authors     => 'David Leadbeater, Timo Sirainen, Georg Lukas, John Drinkwater',
+    contact     => 'dgl@dgl.cx, tss@iki.fi, georg@boerde.de, john@nextraweb.com',
     name        => 'usercount',
     description => 'Adds a usercount for a channel as a statusbar item',
     license     => 'GNU GPLv2 or later',
@@ -32,6 +32,7 @@ use Irssi::TextUI;
 
 my ($ircops, $ops, $halfops, $voices, $normal, $total);
 my ($timeout_tag, $recalc);
+my %maxusers = ();
 
 # Called to make the status bar item
 sub usercount {
@@ -49,6 +50,9 @@ sub usercount {
     calc_users($wi);
   }
 
+  my $channelname = '';
+  $channelname = $wi->{name};
+
   my $theme = Irssi::current_theme();
   my $format = $theme->format_expand("{sb_usercount}");
   if ($format) {
@@ -63,9 +67,9 @@ sub usercount {
           Irssi::EXPAND_FLAG_IGNORE_EMPTY);
     my $normalstr = $theme->format_expand("{sb_uc_normal $normal}",
           Irssi::EXPAND_FLAG_IGNORE_EMPTY);
-	my $space = $theme->format_expand('{sb_uc_space}',
+    my $space = $theme->format_expand('{sb_uc_space}',
          Irssi::EXPAND_FLAG_IGNORE_EMPTY);
-	$space = " " unless $space;
+    $space = " " unless $space;
 
     my $str = "";
     $str .= $ircopstr.$space if defined $ircops;
@@ -76,10 +80,11 @@ sub usercount {
     $str =~ s/\Q$space\E$//;
 
     $format = $theme->format_expand("{sb_usercount $total $str}",
-				    Irssi::EXPAND_FLAG_IGNORE_REPLACES);
+                                   Irssi::EXPAND_FLAG_IGNORE_REPLACES);
   } else {
     # use the default look
     $format = "{sb \%_$total\%_ nicks \%c(\%n";
+    $format .= 'm'.$maxusers{$channelname}.' ' if (defined $maxusers{$channelname});
     $format .= '*'.$ircops.' ' if (defined $ircops);
     $format .= '@'.$ops.' ' if (defined $ops);
     $format .= '%%'.$halfops.' ' if (defined $halfops);
@@ -100,12 +105,12 @@ sub calc_users() {
   for ($channel->nicks()) {
     if ($_->{serverop}) {
       $ircops++;
-	}
+    }
 
     if ($_->{op}) {
       $ops++;
-	} elsif ($_->{halfop}) {
-	   $halfops++;
+    } elsif ($_->{halfop}) {
+       $halfops++;
     } elsif ($_->{voice}) {
       $voices++;
     } else {
@@ -113,7 +118,12 @@ sub calc_users() {
     }
   }
 
-  $total = $ops+$halfops+$voices+$normal;
+  if ( Irssi::settings_get_bool('usercount_show_maxusers') ) {
+    $total = $ops+$halfops+$voices+$normal;
+    if ($total > $maxusers{$channel->{name}}) {
+      $maxusers{$channel->{name}} = $total;
+    }
+  }
   if (!Irssi::settings_get_bool('usercount_show_zero')) {
     $ircops = undef if ($ircops == 0);
     $ops = undef if ($ops == 0);
@@ -158,6 +168,7 @@ $timeout_tag = 0;
 
 Irssi::settings_add_bool('usercount', 'usercount_show_zero', 1);
 Irssi::settings_add_bool('usercount', 'usercount_show_ircops', 0);
+Irssi::settings_add_bool('usercount', 'usercount_show_maxusers', 1);
 Irssi::settings_add_bool('usercount', 'usercount_show_halfops', 1);
 
 Irssi::statusbar_item_register('usercount', undef, 'usercount');
