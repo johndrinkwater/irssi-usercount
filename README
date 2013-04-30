@@ -1,0 +1,10 @@
+Usercount.pl script for irssi that has been modded (if you could call a few
+lines that) to support tracking peak users, tagged with a prefix of m.
+
+Simple example:
+
+    [11:AfterNET/#ludumdare] [Act: 1,2]            [308 nicks (m529 *5 @6 +2 292)]
+
+Blame `#ludumdare` on [AfterNET](irc://irc.afternet.org/) for this feature, as
+I wanted to track how many users our network was gaining over these 48 hour
+events.
