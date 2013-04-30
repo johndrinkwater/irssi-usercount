@@ -118,8 +118,8 @@ sub calc_users() {
     }
   }
 
+  $total = $ops+$halfops+$voices+$normal;
   if ( Irssi::settings_get_bool('usercount_show_maxusers') ) {
-    $total = $ops+$halfops+$voices+$normal;
     if ($total > $maxusers{$channel->{name}}) {
       $maxusers{$channel->{name}} = $total;
     }
