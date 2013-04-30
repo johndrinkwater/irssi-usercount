@@ -1,5 +1,5 @@
 use Irssi 20020101.0250 ();
-$VERSION = "1.16";
+$VERSION = "1.17";
 %IRSSI = (
     authors     => 'David Leadbeater, Timo Sirainen, Georg Lukas, John Drinkwater',
     contact     => 'dgl@dgl.cx, tss@iki.fi, georg@boerde.de, john@nextraweb.com',
@@ -16,6 +16,7 @@ $VERSION = "1.16";
 # /set usercount_show_zero on or off to show users when 0 users of that type
 # /set usercount_show_ircops (default off)
 # /set usercount_show_halfops (default on)
+# /set usercount_show_maxusers (default on)
 
 # you can customize the look of this item from theme file:
 #  sb_usercount = "{sb %_$0%_ nicks ($1-)}";
@@ -69,6 +70,7 @@ sub usercount {
           Irssi::EXPAND_FLAG_IGNORE_EMPTY);
     my $space = $theme->format_expand('{sb_uc_space}',
          Irssi::EXPAND_FLAG_IGNORE_EMPTY);
+    # TODO this is lacking max users
     $space = " " unless $space;
 
     my $str = "";
